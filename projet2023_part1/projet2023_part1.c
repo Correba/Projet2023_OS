@@ -8,7 +8,7 @@
 int main(int argc, char **argv) {
 	int pipefd[2]; // Notre pipe : pipe[0] => read ; pipe[1] => write
 	int num_pid; // Notre fork
-	char *argv2[argc-1]; //tableau de la commande et de ses paramètres et arguments
+	char *argv2[argc]; //tableau de la commande et de ses paramètres et arguments
 	char buf;
 	
 	if (argc<2) {
@@ -16,13 +16,20 @@ int main(int argc, char **argv) {
 		exit(-1); // Assert Error => assert(argc<2);
 	}
 	
-	if (pipe(pipefd) == -1) exit(-2);// Error pipe
+	if (pipe(pipefd) == -1) {
+		printf("Error pipe\n");
+		exit(-2);
+	} // Error pipe
 	
 	num_pid = fork();
-	if (num_pid == -1) exit(-3); // Error fork
+	if (num_pid == -1) {
+		printf("Error fork\n");
+		exit(-3);
+	} // Error fork
+	
+	// --- PROCESSUS FILS ---
 	
 	if (num_pid == 0) {
-		printf("Processus fils\n");
 		close(pipefd[0]); // Ferme le pipe de lecture (Inutile)
 		
 		close(1); // Ferme le canal stdout
@@ -31,13 +38,20 @@ int main(int argc, char **argv) {
 		for (int i = 1; i < argc; i++) {
 			argv2[i-1] = argv[i];
 		} // Créer le tableau de la commande et de ses paramètres et arguments
-		execvp(argv2[0], argv2); // Exécute la commande (argv2[0]) avec ses paramètres et arguments
+		argv2[argc-1] = 0; // execvp a besoin d'un argument 0 dans son tableau argv pour terminer l'éxecution.
+		
+		if (execvp(argv2[0], argv2) == -1) { // Exécute la commande (argv2[0]) avec ses paramètres et arguments
+			printf("Error execvp\n");
+			exit(-4);
+		}; // Error execvp
 		
 		wait(NULL); // Attend la lecture du père
 		exit(0);
 	}
+	
+	// --- PROCESSUS PERE ---
+	
 	else {
-		printf("Processus père\n");
 		close(pipefd[1]); // Ferme le pipe d'écriture (Inutile)
 		
 		while (read(pipefd[0], &buf, 1) > 0) // Lit le pipe dans une variable, caractère par caractère.
