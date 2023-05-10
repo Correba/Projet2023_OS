@@ -56,6 +56,7 @@ int main(int argc, char **argv) {
 		
 		while (read(pipefd[0], &buf, 1) > 0) // Lit le pipe dans une variable, caractère par caractère.
 			printf("%s",&buf); // Affiche chacun des caractères lu
+		printf("\n");
 		
 		exit(0);
 	}
