@@ -54,8 +54,9 @@ int main(int argc, char **argv) {
 	else {
 		close(pipefd[1]); // Ferme le pipe d'écriture (Inutile)
 		
-		while (read(pipefd[0], &buf, 1) > 0) // Lit le pipe dans une variable, caractère par caractère.
+		while (read(pipefd[0], &buf, 1) > 0){ // Lit le pipe dans une variable, caractère par caractère.
 			printf("%s",&buf); // Affiche chacun des caractères lu
+		};
 		printf("\n");
 		
 		exit(0);
