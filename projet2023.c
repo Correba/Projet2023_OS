@@ -16,44 +16,45 @@ int main(int argc, char **argv){
 	
 	for (int script_num = 1; script_num < argc; script_num++){ // Parcoure chaque script shell
 		struct stat sts; // la structure de lecture d'un fichier
-		int fd; // le fichier script shell
-		char **tab; // le tableau des commandes du script shell
-		int place; // la position d'espace mémoire des lignes du script shell
-		char *sc; // une ligne du script shell
+		int file;          // le fichier script shell
+		char **lines;      // le tableau des commandes du script shell
+		int line_pos;       // la position d'espace mémoire des lignes du script shell
+		char *line;        // une ligne du script shell
 		
 		printf("Fichier #%d: %s\n", script_num, argv[script_num]); // le numéro et le nom du script shell
 		
-		fd = open(argv[script_num], O_RDONLY); // Ouvre le fichier script shell en lecture.
-		if (fd < 0){
+		file = open(argv[script_num], O_RDONLY); // Ouvre le fichier script shell en lecture.
+		if (file < 0){
 			printf("Open File Failed");
 			exit(-2);
 		} // Vérifie l'erreur à l'ouverture du fichier script shell.
 		
-		if (fstat(fd, &sts) < 0) {
+		if (fstat(file, &sts) < 0) {
 			printf("Fstat failed");
 			exit(-3);
 		} // Vérifie l'erreur à l'éxecution de la lecture statistique du fichier sript shell.
 		
-		char buff[sts.st_ino]; // la chaine de caractères de la taille du nombre d'inodes du script shell
+		char script[sts.st_ino]; // la chaine de caractères de la taille du nombre d'inodes du script shell
 		
-		read(fd, buff, sts.st_ino); // Lit le contenu du fichier script shell dans le buffer.
-		sc = strtok(buff, "\n"); // Lit la 1ère ligne du fichier scipt shell
+		read(file, script, sts.st_ino); // Lit le contenu du fichier script shell dans le buffer.
+		line = strtok(script, "\n"); // Lit la 1ère ligne du fichier script shell
 		//printf("Premiere sous-chiane = %s\n", sc); // la ligne #!/bin/bash du scipt shell => Aucun intérêt à éxécuter.
 		
-		place = 0; // Initialise la position d'espace mémoire du script shell à 0 octet.
-		while ((sc=strtok(NULL, "\n")) != NULL){ // Lit puis parcoure les commandes du script shell.
-			tab = realloc(tab, sizeof(char *) * (place + 1)); // Alloue un espace mémoire propre à l'adresse de la commande du script shell.
-			tab[place] = sc; // Stocke la commande.
-			place++; // Incrémente la position de l'espace mémoire.
+		line_pos = 0; // Initialise la position d'espace mémoire du script shell à 0 octet.
+		while ((line=strtok(NULL, "\n")) != NULL){ // Lit puis parcoure les commandes du script shell.
+			lines = realloc(lines, sizeof(char *) * (line_pos + 1)); // Alloue un espace mémoire propre à l'adresse de la commande du script shell.
+			lines[line_pos] = line; // Stocke la commande.
+			line_pos++; // Incrémente la position de l'espace mémoire.
 		}
 		
 		// --- EXECUTION DES COMMANDES ---
-		for (int i = 0; i < place; i++){ // Parcoure chaque commande du script shell.
-			int fw[2]; // le pipe avec son entrée de lecture (0) et d'écriture (1)
+		for (int i = 0; i < line_pos; i++){ // Parcoure chaque commande du script shell.
+			int pipefd[2];   // le pipe avec son entrée de lecture (0) et d'écriture (1)
 			int num_pid; // le numéro de processus fils (0) ou père (1)
 			
-			printf("Fichier #%d: Commande#%d: %s\n", script_num, i+1, tab[i]); // le numéro du script shell, le numéro et le nom de la commande
-			if (pipe(fw) == -1) {
+			printf("Fichier #%d: Commande #%d: %s\n", script_num, i+1, lines[i]); // le numéro du script shell, le numéro et le nom de la commande
+			
+			if (pipe(pipefd) == -1) {
 				printf("Pipe Failed");
 				exit(-4);
 			} // Vérifie l'erreur à la création du pipe.
@@ -66,29 +67,32 @@ int main(int argc, char **argv){
 			
 			// --- PROCESSUS FILS ---
 			if (num_pid == 0) { 
-				char **com; // le tableau de la commande suivi de ses paramètres
-				int num; // la position d'espace mémoire de la commande et de ses paramètres
-				char *sc2; // la commande ou un de ses paramètres
+				char **coms; // le tableau de la commande suivi de ses paramètres
+				int pos_com;    // la position d'espace mémoire de la commande et de ses paramètres
+				char *com;  // la commande ou un de ses paramètres
 				
-				close(fw[0]); // Ferme le pipe de lecture inutile au processus fils.
+				close(pipefd[0]); // Ferme le pipe de lecture inutile au processus fils.
 				
-				sc2 = strtok(tab[i], " "); // Lit la commande.
-				num = 0; // Initialise la position d'espace mémoire de la commande ou d'un de ses paramètres à 0 octet.
-				while (sc2 != NULL){ // Parcoure la commande et ses paramètres.
-					com = realloc(com, sizeof(char *) * (num + 1)); // Alloue un espace mémoire propre à l'adresse de la commande ou de son paramètre.
-					com[num] = sc2; // Stocke la commande ou l'un de ses paramètres.
-					sc2 = strtok(NULL, " "); // Lit le paramètre suivant de la commande
-					num++; // Incrémente la position de l'espace mémoire.
+				com = strtok(lines[i], " "); // Lit la commande.
+				pos_com = 0; // Initialise la position d'espace mémoire de la commande ou d'un de ses paramètres à 0 octet.
+				while (com != NULL){ // Parcoure la commande et ses paramètres.
+					coms = realloc(coms, sizeof(char *) * (pos_com + 1)); // Alloue un espace mémoire propre à l'adresse de la commande ou de son paramètre.
+					coms[pos_com] = com; // Stocke la commande ou l'un de ses paramètres.
+					com = strtok(NULL, " "); // Lit le paramètre suivant de la commande
+					pos_com++; // Incrémente la position de l'espace mémoire.
 				}
-				com[num] = 0; // Termine le tbleau par un 0, ce qui est nécessaire à l'éxecution de la commande.
+				coms[pos_com] = 0; // Termine le tbleau par un 0, ce qui est nécessaire à l'éxecution de la commande.
 				
 				close(1); // Ferme le canal de sortie du terminal (stdout).
-				dup2(fw[1], 1); // place le pipe d'écriture comme canal de sortie à la place de celui du terminal.
+				if (dup2(pipefd[1], 1) == -1) { // Place le pipe d'écriture comme canal de sortie à la place de celui du terminal.
+					printf("Dup Failed");
+					exit(-6);
+				} // Vérifie l'erreur au changement du canal de sortie
 				
 				//int execvp(const char *argv[1], char *const argv2[]); définition des paramètres de la fonction 'execvp'
-				if (execvp(com[0], com) == -1){ // Exécute la commande (com[0]) avec ses paramètres.
+				if (execvp(coms[0], coms) == -1){ // Exécute la commande (com[0]) avec ses paramètres.
 					printf("Execvp Failed");
-					exit(-6);
+					exit(-7);
 				} // Vérifie l'erreur à l'éxecution de la commande.
 				
 				/* PAS NECESSAIRE : execvp tue le processus fils à l'éxecution.
@@ -96,23 +100,22 @@ int main(int argc, char **argv){
 				wait(NULL); // Attend la lecture du processus père.
 				exit(0); // Termine le processus fils avec succés.
 				*/
-				
 			} 
 			
 			// --- PROCESSUS PERE ---
 			else {
-				char buf; // les résultats de l'éxécution des commandes du script shell
+				char results; // les résultats de l'éxécution des commandes du script shell
 			
-				close(fw[1]); // Ferme le pipe d'écriture inutile au processus père.
+				close(pipefd[1]); // Ferme le pipe d'écriture inutile au processus père.
 				
-				while (read(fw[0], &buf, 1) > 0){ // Lit chaque caractère des résultats de l'éxécution des commandes du script shell.
-					printf("%s", &buf); // Affiche chacun de ces caractères.
+				while (read(pipefd[0], &results, 1) > 0){ // Lit chaque caractère des résultats de l'éxécution des commandes du script shell.
+					printf("%s", &results); // Affiche chacun de ces caractères.
 				}
 				printf("\n"); // Termine l'affichage des résultats.
 				
-				close(fw[0]); // Ferme le pipe de lecture.
+				close(pipefd[0]); // Ferme le pipe de lecture.
 			}
 		}
-		close(fd); // Ferme le fichier script shell.
+		close(file); // Ferme le fichier script shell.
 	}
 }
