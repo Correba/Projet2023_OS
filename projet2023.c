@@ -38,7 +38,6 @@ int main(int argc, char **argv){
 		
 		read(file, script, sts.st_ino); // Lit le contenu du fichier script shell dans le buffer.
 		line = strtok(script, "\n"); // Lit la 1ère ligne du fichier script shell
-		//printf("Premiere sous-chiane = %s\n", sc); // la ligne #!/bin/bash du scipt shell => Aucun intérêt à éxécuter.
 		
 		line_pos = 0; // Initialise la position d'espace mémoire du script shell à 0 octet.
 		while ((line=strtok(NULL, "\n")) != NULL){ // Lit puis parcoure les commandes du script shell.
