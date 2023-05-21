@@ -37,6 +37,7 @@ int main(int argc, char **argv){
 		char script[sts.st_ino]; // la chaine de caractères de la taille du nombre d'inodes du script shell
 		
 		read(file, script, sts.st_ino); // Lit le contenu du fichier script shell dans le buffer.
+		close(file); // Ferme le fichier script shell.
 		line = strtok(script, "\n"); // Lit la 1ère ligne du fichier script shell
 		
 		line_pos = 0; // Initialise la position d'espace mémoire du script shell à 0 octet.
@@ -115,6 +116,5 @@ int main(int argc, char **argv){
 				close(pipefd[0]); // Ferme le pipe de lecture.
 			}
 		}
-		close(file); // Ferme le fichier script shell.
 	}
 }
