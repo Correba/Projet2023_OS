@@ -67,23 +67,23 @@ int main(int argc, char **argv){
 			// --- PROCESSUS FILS ---
 			if (num_pid == 0) { 
 				char **coms; // le tableau de la commande suivi de ses paramètres
-				int pos_com;    // la position d'espace mémoire de la commande et de ses paramètres
+				int com_pos;    // la position d'espace mémoire de la commande et de ses paramètres
 				char *com;  // la commande ou un de ses paramètres
 				
 				close(pipefd[0]); // Ferme le pipe de lecture inutile au processus fils.
 				
 				com = strtok(lines[i], " "); // Lit la commande.
-				pos_com = 0; // Initialise la position d'espace mémoire de la commande ou d'un de ses paramètres à 0 octet.
+				com_pos = 0; // Initialise la position d'espace mémoire de la commande ou d'un de ses paramètres à 0 octet.
 				while (com != NULL){ // Parcoure la commande et ses paramètres.
 					coms = realloc(coms, sizeof(char *) * (pos_com + 1)); // Alloue un espace mémoire propre à l'adresse de la commande ou de son paramètre.
 					coms[pos_com] = com; // Stocke la commande ou l'un de ses paramètres.
 					com = strtok(NULL, " "); // Lit le paramètre suivant de la commande
-					pos_com++; // Incrémente la position de l'espace mémoire.
+					com_pos++; // Incrémente la position de l'espace mémoire.
 				}
-				coms[pos_com] = 0; // Termine le tbleau par un 0, ce qui est nécessaire à l'éxecution de la commande.
+				coms[com_pos] = 0; // Termine le tbleau par un 0, ce qui est nécessaire à l'éxecution de la commande.
 				
 				close(1); // Ferme le canal de sortie du terminal (stdout).
-				if (dup2(pipefd[1], 1) == -1) { // Place le pipe d'écriture comme canal de sortie à la place de celui du terminal.
+				if (dup2(pipefd[1], 1) == -1) { // Dévie le pipe d'écriture comme canal de sortie à la place de celui du terminal.
 					printf("Dup Failed");
 					exit(-6);
 				} // Vérifie l'erreur au changement du canal de sortie
