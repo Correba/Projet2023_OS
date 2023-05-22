@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+// #include <sys/wait.h> // wait utilisé en commentaires
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -25,12 +25,12 @@ int main(int argc, char **argv){
 		
 		file = open(argv[script_num], O_RDONLY); // Ouvre le fichier script shell en lecture.
 		if (file < 0){
-			printf("Open File Failed");
+			printf("Erreur d'ouverture du fichier");
 			exit(-2);
 		} // Vérifie l'erreur à l'ouverture du fichier script shell.
 		
 		if (fstat(file, &sts) < 0) {
-			printf("Fstat failed");
+			printf("Erreur d'exécution de fstat");
 			exit(-3);
 		} // Vérifie l'erreur à l'éxecution de la lecture statistique du fichier sript shell.
 		
@@ -55,13 +55,13 @@ int main(int argc, char **argv){
 			printf("Fichier #%d: Commande #%d: %s\n", script_num, i+1, lines[i]); // le numéro du script shell, le numéro et le nom de la commande
 			
 			if (pipe(pipefd) == -1) {
-				printf("Pipe Failed");
+				printf("Erreur de création du pipe");
 				exit(-4);
 			} // Vérifie l'erreur à la création du pipe.
 			
 			num_pid = fork(); // Génère un processus fils.
 			if (num_pid == -1) {
-				printf("Fork Failed");
+				printf("Erreur de création du processus fils");
 				exit(-5);
 			} // Vérifie l'erreur à la création du processus fils.
 			
@@ -85,13 +85,13 @@ int main(int argc, char **argv){
 				
 				close(1); // Ferme le canal de sortie du terminal (stdout).
 				if (dup2(pipefd[1], 1) == -1) { // Dévie le pipe d'écriture comme canal de sortie à la place de celui du terminal.
-					printf("Dup Failed");
+					printf("Erreur d'exécution de dup2");
 					exit(-6);
 				} // Vérifie l'erreur au changement du canal de sortie
 				
 				//int execvp(const char *argv[1], char *const argv2[]); définition des paramètres de la fonction 'execvp'
 				if (execvp(coms[0], coms) == -1){ // Exécute la commande (com[0]) avec ses paramètres.
-					printf("Execvp Failed");
+					printf("Erreur d'exécution d'execvp");
 					exit(-7);
 				} // Vérifie l'erreur à l'éxecution de la commande.
 				
@@ -117,4 +117,5 @@ int main(int argc, char **argv){
 			}
 		}
 	}
+	exit(0); // Finit le programme avec succés.
 }
