@@ -25,12 +25,12 @@ int main(int argc, char **argv){
 		
 		file = open(argv[script_num], O_RDONLY); // Ouvre le fichier script shell en lecture.
 		if (file < 0){
-			printf("Erreur d'ouverture du fichier\n"");
+			printf("Erreur d'ouverture du fichier\n");
 			exit(-2);
 		} // Vérifie l'erreur à l'ouverture du fichier script shell.
 		
 		if (fstat(file, &sts) < 0) {
-			printf("Erreur d'exécution de fstat\n"");
+			printf("Erreur d'exécution de fstat\n");
 			exit(-3);
 		} // Vérifie l'erreur à l'éxecution de la lecture statistique du fichier sript shell.
 		
@@ -55,13 +55,13 @@ int main(int argc, char **argv){
 			printf("Fichier #%d: Commande #%d: %s\n", script_num, i+1, lines[i]); // le numéro du script shell, le numéro et le nom de la commande
 			
 			if (pipe(pipefd) == -1) {
-				printf("Erreur de création du pipe\n"");
+				printf("Erreur de création du pipe\n");
 				exit(-4);
 			} // Vérifie l'erreur à la création du pipe.
 			
 			num_pid = fork(); // Génère un processus fils.
 			if (num_pid == -1) {
-				printf("Erreur de création du processus fils\n"");
+				printf("Erreur de création du processus fils\n");
 				exit(-5);
 			} // Vérifie l'erreur à la création du processus fils.
 			
@@ -85,13 +85,13 @@ int main(int argc, char **argv){
 				
 				close(1); // Ferme le canal de sortie du terminal (stdout).
 				if (dup2(pipefd[1], 1) == -1) { // Dévie le pipe d'écriture comme canal de sortie à la place de celui du terminal.
-					printf("Erreur d'exécution de dup2\n"");
+					printf("Erreur d'exécution de dup2\n");
 					exit(-6);
 				} // Vérifie l'erreur au changement du canal de sortie
 				
 				//int execvp(const char *argv[1], char *const argv2[]); définition des paramètres de la fonction 'execvp'
 				if (execvp(coms[0], coms) == -1){ // Exécute la commande (com[0]) avec ses paramètres.
-					printf("Erreur d'exécution d'execvp\n"");
+					printf("Erreur d'exécution d'execvp\n");
 					exit(-7);
 				} // Vérifie l'erreur à l'éxecution de la commande.
 				
