@@ -17,7 +17,7 @@ int main(int argc, char **argv){
 	for (int script_num = 1; script_num < argc; script_num++){ // Parcoure chaque script shell
 		struct stat sts; // la structure de lecture d'un fichier
 		int file;          // le fichier script shell
-		char **lines;      // le tableau des commandes du script shell
+		char **lines = NULL;      // le tableau des commandes du script shell
 		int line_pos;       // la position d'espace mémoire des lignes du script shell
 		char *line;        // une ligne du script shell
 		
@@ -67,7 +67,7 @@ int main(int argc, char **argv){
 			
 			// --- PROCESSUS FILS ---
 			if (num_pid == 0) { 
-				char **coms; // le tableau de la commande suivi de ses paramètres
+				char **coms = NULL; // le tableau de la commande suivi de ses paramètres
 				int com_pos;    // la position d'espace mémoire de la commande et de ses paramètres
 				char *com;  // la commande ou un de ses paramètres
 				
@@ -76,8 +76,8 @@ int main(int argc, char **argv){
 				com = strtok(lines[i], " "); // Lit la commande.
 				com_pos = 0; // Initialise la position d'espace mémoire de la commande ou d'un de ses paramètres à 0 octet.
 				while (com != NULL){ // Parcoure la commande et ses paramètres.
-					coms = realloc(coms, sizeof(char *) * (pos_com + 1)); // Alloue un espace mémoire propre à l'adresse de la commande ou de son paramètre.
-					coms[pos_com] = com; // Stocke la commande ou l'un de ses paramètres.
+					coms = realloc(coms, sizeof(char *) * (com_pos + 1)); // Alloue un espace mémoire propre à l'adresse de la commande ou de son paramètre.
+					coms[com_pos] = com; // Stocke la commande ou l'un de ses paramètres.
 					com = strtok(NULL, " "); // Lit le paramètre suivant de la commande
 					com_pos++; // Incrémente la position de l'espace mémoire.
 				}
