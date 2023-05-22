@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
-// #include <sys/wait.h> // wait utilisé en commentaires
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <string.h>
+// #include <sys/wait.h> // wait utilisé en commentaires
 
 int main(int argc, char **argv){
 
